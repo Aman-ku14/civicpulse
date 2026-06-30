@@ -79,10 +79,6 @@ export class AuthManager {
             }
         }
 
-        // Auto login demo user if no active session
-        if (!localStorage.getItem(SESSION_KEY)) {
-            this.setSession(DEFAULT_DEMO_USER);
-        }
     }
 
     static getUsers() {

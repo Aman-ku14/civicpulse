@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Location Picker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; }
+        #map { width: 100%; height: 100%; }
+        .pin-instruction {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(15, 23, 42, 0.85);
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            border: 1px solid rgba(255,255,255,0.1);
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+        }
+        .leaflet-control-zoom a {
+            background: rgba(15, 23, 42, 0.9) !important;
+            color: #e2e8f0 !important;
+            border-color: rgba(255,255,255,0.1) !important;
+        }
+        .leaflet-control-zoom a:hover {
+            background: rgba(30, 41, 59, 0.95) !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="pin-instruction">📍 Click or drag the pin to set location</div>
+    <script>
+        // Default: Connaught Place, Delhi
+        const defaultLat = 28.6139;
+        const defaultLng = 77.2090;
+
+        const map = L.map('map', {
+            zoomControl: true,
+            scrollWheelZoom: true
+        }).setView([defaultLat, defaultLng], 13);
+
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        // Custom marker icon
+        const pinIcon = L.divIcon({
+            html: '<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="#6366f1" stroke="#312e81" stroke-width="1.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3" fill="white" stroke="#6366f1" stroke-width="1.5"/></svg>',
+            className: '',
+            iconSize: [36, 36],
+            iconAnchor: [18, 36]
+        });
+
+        const marker = L.marker([defaultLat, defaultLng], {
+            icon: pinIcon,
+            draggable: true
+        }).addTo(map);
+
+        function sendLocation(lat, lng) {
+            window.parent.postMessage({
+                type: 'location-picked',
+                lat: parseFloat(lat.toFixed(5)),
+                lng: parseFloat(lng.toFixed(5))
+            }, '*');
+        }
+
+        marker.on('dragend', function(e) {
+            const pos = marker.getLatLng();
+            sendLocation(pos.lat, pos.lng);
+        });
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            sendLocation(e.latlng.lat, e.latlng.lng);
+        });
+
+        // Listen for parent setting initial location
+        window.addEventListener('message', function(e) {
+            if (e.data && e.data.type === 'set-location') {
+                const latlng = [e.data.lat, e.data.lng];
+                map.setView(latlng, 13);
+                marker.setLatLng(latlng);
+            }
+        });
+
+        // Signal ready
+        window.parent.postMessage({ type: 'map-picker-ready' }, '*');
+    </script>
+</body>
+</html>

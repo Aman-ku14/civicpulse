@@ -1,0 +1,22 @@
+# CivicPulse Implementation Tasks
+
+- `[x]` Setup workspace structure and basic assets
+  - `[x]` Create index.html
+  - `[x]` Create css/index.css (design system)
+  - `[x]` Create js/app.js (router & core)
+  - `[x]` Create js/utils.js
+- `[x]` Core State and Logic
+  - `[x]` Create js/store.js (data layer + 50+ Delhi seed issues)
+  - `[x]` Create js/ai-engine.js (keyword classifier, duplicate check, predictive insights)
+- `[x]` Page Modules
+  - `[x]` Create js/pages/home.js (Landing & activity feed)
+  - `[x]` Create js/pages/report.js (Multi-step report wizard with Leaflet mapping)
+  - `[x]` Create js/pages/map.js (Leaflet main map, clusters, heatmaps, filters)
+  - `[x]` Create js/pages/issue-detail.js (Timeline, voting, comments)
+  - `[x]` Create js/pages/dashboard.js (Chart.js charts, KPIs, prediction display)
+  - `[x]` Create js/pages/leaderboard.js (Gamification profiles & levels)
+  - `[x]` Create js/pages/profile.js (User progress & heat calendar)
+- `[x]` Verification and Final Touches
+  - `[x]` Verify all pages interact correctly
+  - `[x]` Verify localStorage state transitions
+  - `[x]` Create walkthrough.md

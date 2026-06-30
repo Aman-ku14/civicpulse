@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <title>CivicPulse — Hyperlocal Issue Solver & Community Dashboard</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet Map CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    
+    <!-- FontAwesome/Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body class="dark-mode">
+    <div id="app" class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">
+                    <i data-lucide="activity" class="pulse-icon"></i>
+                </div>
+                <span class="logo-text">Civic<span>Pulse</span></span>
+            </div>
+            
+            <nav class="nav-links">
+                <a href="#home" class="nav-item active" data-page="home">
+                    <i data-lucide="home"></i><span data-i18n="nav_home">Home</span>
+                </a>
+                <a href="#map" class="nav-item" data-page="map">
+                    <i data-lucide="map"></i><span data-i18n="nav_map">Delhi Map</span>
+                </a>
+                <a href="#report" class="nav-item" data-page="report">
+                    <i data-lucide="plus-circle"></i><span data-i18n="nav_report">Report Issue</span>
+                </a>
+                <a href="#dashboard" class="nav-item" data-page="dashboard">
+                    <i data-lucide="bar-chart-3"></i><span data-i18n="nav_dashboard">Impact Dashboard</span>
+                </a>
+                <a href="#leaderboard" class="nav-item" data-page="leaderboard">
+                    <i data-lucide="trophy"></i><span data-i18n="nav_leaderboard">Leaderboard</span>
+                </a>
+                <a href="#profile" class="nav-item" data-page="profile">
+                    <i data-lucide="user"></i><span data-i18n="nav_profile">My Profile</span>
+                </a>
+                <a href="#admin" class="nav-item" data-page="admin">
+                    <i data-lucide="shield-alert"></i><span data-i18n="nav_admin">Admin Panel</span>
+                </a>
+                <a href="#settings" class="nav-item" data-page="settings" style="display: none;">
+                    <i data-lucide="settings"></i><span data-i18n="nav_settings">AI Settings</span>
+                </a>
+            </nav>
+
+            <div class="user-quick-profile" id="sidebar-user-info">
+                <!-- Populated dynamically -->
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="topbar">
+                <button class="mobile-menu-toggle" id="menuToggle">
+                    <i data-lucide="menu"></i>
+                </button>
+                <div class="topbar-search" style="position: relative;">
+                    <i data-lucide="search"></i>
+                    <input type="text" placeholder="Search issues, sectors, or streets in Delhi..." id="globalSearch" data-i18n="search_placeholder" autocomplete="off">
+                    <div id="searchResults" class="search-results-dropdown" style="display: none;">
+                        <!-- Results dynamically populated -->
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="action-btn lang-btn" id="langToggle" style="font-weight: 600; padding: 6px 12px; font-size: 13px; letter-spacing: 0.5px; border-radius: 8px; border: 1px solid var(--border-color); background: rgba(30, 41, 59, 0.5); color: var(--text-primary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                        <i data-lucide="languages" style="width: 16px;"></i><span>EN</span>
+                    </button>
+                    <div style="position: relative;">
+                        <button class="action-btn notification-btn" id="notifBtn">
+                            <i data-lucide="bell"></i>
+                            <span class="badge" id="notifCount" style="display: none;">0</span>
+                        </button>
+                        <div id="notifDropdown" class="notif-dropdown" style="display: none;">
+                            <div class="notif-header">
+                                <h4 style="margin:0; font-size: 14px;">Notifications</h4>
+                                <button id="markAllReadBtn" style="background:none; border:none; color:var(--primary); font-size:12px; cursor:pointer;">Mark all read</button>
+                            </div>
+                            <div id="notifList" class="notif-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                    <a href="#report" class="btn btn-primary btn-icon">
+                        <i data-lucide="plus"></i><span data-i18n="report_btn">Report</span>
+                    </a>
+                </div>
+            </header>
+
+            <!-- Page Container (Dynamic Injection) -->
+            <div id="page-container" class="page-container">
+                <!-- Pages get loaded here dynamically -->
+                <div class="page-loader">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Authentication Modal (Login / Signup) -->
+    <div id="auth-modal" class="auth-modal-overlay" style="display: none;">
+        <div class="glass-card auth-modal-card">
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="tab-login">Login</button>
+                <button class="auth-tab" id="tab-signup">Sign Up</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form">
+                <h3 style="margin-bottom: 20px; font-family: 'Outfit', sans-serif;">Welcome back to CivicPulse</h3>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="login-email" required placeholder="name@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="width: 100%; margin-top: 15px; padding: 12px;">Sign In</button>
+                <p class="auth-help-text" style="font-size: 12px; color: var(--text-secondary); text-align: center; margin-top: 20px; line-height: 1.5;">
+                    Demo Citizen: <strong>aarav@civicpulse.org</strong> / <strong>password123</strong><br>
+                    Demo Admin: <strong>admin@civicpulse.org</strong> / <strong>admin123</strong>
+                </p>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="auth-form" style="display: none;">
+                <h3 style="margin-bottom: 20px; font-family: 'Outfit', sans-serif;">Join CivicPulse Delhi</h3>
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="Aarav Sharma">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="signup-email" required placeholder="name@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" style="width: 100%; margin-top: 15px; padding: 12px;">Register Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notification Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- CDNs loaded at bottom -->
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- App Scripts -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>

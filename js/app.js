@@ -316,6 +316,7 @@ class CivicPulseApp {
     }
 
     showAuthModal() {
+        this.pageContainer.innerHTML = ''; // Clear the initial loading spinner
         const modal = document.getElementById('auth-modal');
         if (modal) {
             modal.style.display = 'flex';
